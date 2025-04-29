@@ -33,6 +33,7 @@ public class SpringBatchJob {
     @Bean
     public Job springBatchThreeStepsJob() {
         return new JobBuilder("springBatchThreeStepsJob", jobRepository)
+                .listener(new TracingJobListener())
                 .start(step1())
                 .next(step2())
                 .next(step3())
