@@ -1,0 +1,27 @@
+### Use the following command or Kibana Dev Tools to define a 7-day retention policy:
+PUT http://localhost:9200/_ilm/policy/jaeger-7days
+{
+  "policy": {
+    "phases": {
+      "hot": {
+        "actions": {}
+      },
+      "delete": {
+        "min_age": "7d",
+        "actions": {
+          "delete": {}
+        }
+      }
+    }
+  }
+}
+### You can update the template used by Jaeger indices to apply this policy
+PUT http://localhost:9200/_template/jaeger-span-template
+{
+  "index_patterns": ["jaeger-span-*"],
+  "settings": {
+    "index.lifecycle.name": "jaeger-7days",
+    "index.lifecycle.rollover_alias": "jaeger-span"
+  }
+}
+
