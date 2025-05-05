@@ -1,0 +1,49 @@
+<configuration>
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>
+                %d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} [traceId=%X{trace_id} spanId=%X{span_id}] - %msg%n
+            </pattern>
+        </encoder>
+    </appender>
+
+    <appender name="JSON_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <providers>
+
+                <!-- Timestamp -->
+                <timestamp>
+                    <timeZone>UTC</timeZone>
+                </timestamp>
+
+                <!-- Log Level -->
+                <logLevel />
+
+                <!-- Logger Name -->
+                <loggerName />
+
+                <!-- Thread Name -->
+                <threadName />
+
+                <!-- Message -->
+                <message />
+
+                <!-- Mapped Diagnostic Context (for trace IDs etc.) -->
+                <mdc />
+
+                <!-- Stack Trace -->
+                <stackTrace />
+
+                <!-- Custom Fields (adds metadata like service name) -->
+                <customFields>{"app":"spring-batch-template","env":"prod"}</customFields>
+
+            </providers>
+        </encoder>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="JSON_CONSOLE" />
+    </root>
+</configuration>

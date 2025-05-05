@@ -1,5 +1,7 @@
 package com.sandro.template.batch;
 
+import io.opentelemetry.api.trace.Tracer;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.job.builder.JobBuilder;
@@ -14,15 +16,20 @@ import org.springframework.transaction.PlatformTransactionManager;
 
 import static com.sandro.template.batch.SpringBatchListener.SPRING_BATCH_MESSAGE;
 
+@Slf4j
 @Configuration
 public class SpringBatchJob {
 
     private final JobRepository jobRepository;
     private final PlatformTransactionManager transactionManager;
+    private final Tracer tracer;
 
-    public SpringBatchJob(JobRepository jobRepository, PlatformTransactionManager transactionManager) {
+    public SpringBatchJob(JobRepository jobRepository,
+                          PlatformTransactionManager transactionManager,
+                          Tracer tracer) {
         this.jobRepository = jobRepository;
         this.transactionManager = transactionManager;
+        this.tracer = tracer;
     }
 
     @Bean
@@ -33,7 +40,7 @@ public class SpringBatchJob {
     @Bean
     public Job springBatchThreeStepsJob() {
         return new JobBuilder("springBatchThreeStepsJob", jobRepository)
-                .listener(new TracingJobListener())
+                .listener(new TracingJobListener(tracer))
                 .start(step1())
                 .next(step2())
                 .next(step3())
@@ -44,7 +51,7 @@ public class SpringBatchJob {
     public Step step1() {
         return new StepBuilder("step1", jobRepository)
                 .tasklet((contribution, chunkContext) -> {
-                    System.out.println("Step 1: " + chunkContext.getStepContext().getJobParameters().get(SPRING_BATCH_MESSAGE));
+                    log.info("Step 1: " + chunkContext.getStepContext().getJobParameters().get(SPRING_BATCH_MESSAGE));
                     return RepeatStatus.FINISHED;
                 }, transactionManager)
                 .build();
@@ -54,7 +61,7 @@ public class SpringBatchJob {
     public Step step2() {
         return new StepBuilder("step2", jobRepository)
                 .tasklet((contribution, chunkContext) -> {
-                    System.out.println("Step 2: " + chunkContext.getStepContext().getJobParameters().get(SPRING_BATCH_MESSAGE));
+                    log.info("Step 2: " + chunkContext.getStepContext().getJobParameters().get(SPRING_BATCH_MESSAGE));
                     return RepeatStatus.FINISHED;
                 }, transactionManager)
                 .build();
@@ -64,8 +71,7 @@ public class SpringBatchJob {
     public Step step3() {
         return new StepBuilder("step3", jobRepository)
                 .tasklet((contribution, chunkContext) -> {
-                    System.out.println("Step 3: " + chunkContext.getStepContext().getJobParameters().get(SPRING_BATCH_MESSAGE));
-                    //Thread.sleep(Duration.of(1, ChronoUnit.MINUTES));
+                    log.info("Step 3: " + chunkContext.getStepContext().getJobParameters().get(SPRING_BATCH_MESSAGE));
                     return RepeatStatus.FINISHED;
                 }, transactionManager)
                 .build();
